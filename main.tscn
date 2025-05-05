@@ -1,4 +1,4 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://script/wario_listen.gd" type="Script" id=1]
 [ext_resource path="res://actor.tscn" type="PackedScene" id=2]
@@ -8,6 +8,8 @@ action = "ui_select"
 
 [sub_resource type="ShortCut" id=2]
 shortcut = SubResource( 1 )
+
+[sub_resource type="AudioStreamMicrophone" id=3]
 
 [node name="main" type="Node"]
 
@@ -50,6 +52,7 @@ margin_right = 286.0
 margin_bottom = 55.0
 
 [node name="record" type="Button" parent="gui/center/panel/sort"]
+visible = false
 margin_top = 59.0
 margin_right = 286.0
 margin_bottom = 79.0
@@ -71,10 +74,19 @@ label_listening_path = NodePath("../gui/center/panel/sort/text2")
 input_spinner_path = NodePath("../gui/center/panel/sort/input")
 
 [node name="record" type="AudioStreamPlayer" parent="wario_listen"]
+stream = SubResource( 3 )
+autoplay = true
 bus = "AudioIn"
 
 [node name="playback" type="AudioStreamPlayer" parent="wario_listen"]
 bus = "Wario"
+
+[node name="poll_rate" type="Timer" parent="wario_listen"]
+wait_time = 0.05
+autostart = true
+
+[node name="debounce" type="Timer" parent="wario_listen"]
+one_shot = true
 
 [node name="ViewportContainer" type="ViewportContainer" parent="."]
 anchor_right = 1.0
@@ -101,3 +113,6 @@ fov = 58.9
 [connection signal="toggled" from="gui/center/panel/sort/record" to="wario_listen" method="_on_button_press"]
 [connection signal="wario_done" from="wario_listen" to="ViewportContainer/Viewport/actor" method="_voice_recieved"]
 [connection signal="wario_listening" from="wario_listen" to="ViewportContainer/Viewport/actor" method="_started_recording"]
+[connection signal="finished" from="wario_listen/playback" to="wario_listen" method="_on_finished_speaking"]
+[connection signal="timeout" from="wario_listen/poll_rate" to="wario_listen" method="_on_audio_poll"]
+[connection signal="timeout" from="wario_listen/debounce" to="wario_listen" method="_on_debounce"]
